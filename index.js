@@ -127,6 +127,19 @@ const countPointsLeftInSprint = async (
           },
         },
         {
+          property: "Epic",
+          multi_select: {
+            does_not_contain: "🪖 Ops Support",
+          },
+        },
+
+        {
+          property: "Epic",
+          multi_select: {
+            does_not_contain: "⚡️ MID-SPRINT",
+          },
+        },
+        {
           property: estimateProp,
           number: {
             is_not_empty: true,

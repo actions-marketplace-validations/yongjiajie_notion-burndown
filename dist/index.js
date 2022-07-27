@@ -15815,7 +15815,7 @@ module.exports = JSON.parse('{"name":"@notionhq/client","version":"1.0.4","descr
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"chart.js-image","version":"6.0.3","description":"Render Chart.JS as Image (or URL of Image)","main":"lib.js","types":"types.d.ts","scripts":{"test":"jest --coverage ./test.js","@comment updr":"-r basic : Uses console.log for output, no need for a TTY (e.g when running on CI) => https://www.npmjs.com/package/updtr#--reporter--r","updtr":"updtr -r basic"},"engines":{"node":">12"},"jest":{"verbose":true,"cacheDirectory":".jest_cache","testEnvironment":"node","testTimeout":5000,"coverageDirectory":"coverage","moduleFileExtensions":["js","json"],"modulePaths":["<rootDir>/src/"],"reporters":["default",["jest-junit",{"outputDirectory":"coverage","outputName":"junit.xml"}]],"coverageThreshold":{"global":{"branches":89,"functions":95,"lines":100,"statements":98}}},"author":"Francois-Guillaume Ribreau <npm@fgribreau.com> (http://fgribreau.com/)","license":"MIT","dependencies":{"node-fetch":"2.6.0","javascript-stringify":"2.0.1"},"devDependencies":{"updtr":"3.1.0","jest":"26.0.1","babel-jest":"26.0.1","@babel/preset-env":"7.9.6","npm-release":"^1.0.0","jest-junit":"10.0.0"},"repository":{"type":"git","url":"git+ssh://git@github.com/image-charts/.git"},"keywords":["chart.js","charts","chart url","image","imagecharts","png","jpg","jpeg","gif","animated","api","pie","bar","horizontal-bar","bubble","doughnut","line","polar"],"bugs":{"url":"https://github.com/image-charts//issues"},"homepage":"https://github.com/image-charts/#readme","contributors":[]}');
+module.exports = JSON.parse('{"_args":[["chart.js-image@6.0.3","/Users/yongjiajie/dev/yongjiajie/notion-burndown"]],"_from":"chart.js-image@6.0.3","_id":"chart.js-image@6.0.3","_inBundle":false,"_integrity":"sha512-Gu+6+OCr0eb4i4UoQTfD8tsSFxYE2sbtBUZZQ8+m7/n7W/JeaIhxdEP1vuQ4Qtrg4jBcWKqDW8S8aWJJJd0VWQ==","_location":"/chart.js-image","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"chart.js-image@6.0.3","name":"chart.js-image","escapedName":"chart.js-image","rawSpec":"6.0.3","saveSpec":null,"fetchSpec":"6.0.3"},"_requiredBy":["/"],"_resolved":"https://registry.npmjs.org/chart.js-image/-/chart.js-image-6.0.3.tgz","_spec":"6.0.3","_where":"/Users/yongjiajie/dev/yongjiajie/notion-burndown","author":{"name":"Francois-Guillaume Ribreau","email":"npm@fgribreau.com","url":"http://fgribreau.com/"},"bugs":{"url":"https://github.com/image-charts//issues"},"contributors":[],"dependencies":{"javascript-stringify":"2.0.1","node-fetch":"2.6.0"},"description":"Render Chart.JS as Image (or URL of Image)","devDependencies":{"@babel/preset-env":"7.9.6","babel-jest":"26.0.1","jest":"26.0.1","jest-junit":"10.0.0","npm-release":"^1.0.0","updtr":"3.1.0"},"engines":{"node":">12"},"homepage":"https://github.com/image-charts/#readme","jest":{"verbose":true,"cacheDirectory":".jest_cache","testEnvironment":"node","testTimeout":5000,"coverageDirectory":"coverage","moduleFileExtensions":["js","json"],"modulePaths":["<rootDir>/src/"],"reporters":["default",["jest-junit",{"outputDirectory":"coverage","outputName":"junit.xml"}]],"coverageThreshold":{"global":{"branches":89,"functions":95,"lines":100,"statements":98}}},"keywords":["chart.js","charts","chart url","image","imagecharts","png","jpg","jpeg","gif","animated","api","pie","bar","horizontal-bar","bubble","doughnut","line","polar"],"license":"MIT","main":"lib.js","name":"chart.js-image","repository":{"type":"git","url":"git+ssh://git@github.com/image-charts/.git.git"},"scripts":{"@comment updr":"-r basic : Uses console.log for output, no need for a TTY (e.g when running on CI) => https://www.npmjs.com/package/updtr#--reporter--r","test":"jest --coverage ./test.js","updtr":"updtr -r basic"},"types":"types.d.ts","version":"6.0.3"}');
 
 /***/ }),
 
@@ -16009,16 +16009,40 @@ const countPointsLeftInSprint = async (
   const response = await notion.databases.query({
     database_id: backlogDb,
     filter: {
-      property: sprintProp,
-      select: {
-        equals: `Sprint ${sprint}`,
-      },
+      and: [
+        {
+          property: sprintProp,
+          select: {
+            equals: `Sprint ${sprint}`,
+          },
+        },
+        {
+          property: "Epic",
+          multi_select: {
+            does_not_contain: "🪖 Ops Support",
+          },
+        },
+
+        {
+          property: "Epic",
+          multi_select: {
+            does_not_contain: "⚡️ MID-SPRINT",
+          },
+        },
+        {
+          property: estimateProp,
+          number: {
+            is_not_empty: true,
+          },
+        },
+      ],
     },
   });
   const sprintStories = response.results;
   const ongoingStories = sprintStories.filter(
-    (item) =>
-      !new RegExp(statusExclude).test(item.properties.Status.select.name)
+    (story) =>
+      story.properties.Status.select &&
+      !new RegExp(statusExclude).test(story.properties.Status.select.name)
   );
   return ongoingStories.reduce((accum, item) => {
     if (item.properties[estimateProp]) {

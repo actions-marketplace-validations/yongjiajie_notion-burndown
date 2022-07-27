@@ -126,6 +126,12 @@ const countPointsLeftInSprint = async (
             equals: `Sprint ${sprint}`,
           },
         },
+        {
+          property: estimateProp,
+          number: {
+            is_not_empty: true,
+          },
+        },
       ],
     },
   });

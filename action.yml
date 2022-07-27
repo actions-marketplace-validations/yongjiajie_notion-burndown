@@ -1,4 +1,4 @@
-name: "Notion Burndown Chart"
+name: "Notion Burndown Chart (YJJ)"
 description: "Generates Burndown Chart based on Scrum backlog in Notion database"
 branding:
   icon: bar-chart-2
